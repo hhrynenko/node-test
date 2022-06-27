@@ -1,48 +1,71 @@
-const express = require('express')
-const router = express.Router()
-const needle = require('needle')
-const url = require('url')
-const {header} = require("needle/lib/auth");
+const express = require('express');
+const needle = require('needle');
+const url = require('url');
+const router = express.Router();
+const constants = require('../utils/constants')
 
-const API_BASE_URL = process.env.API_REF
-const API_KEY = process.env.API_KEY
-const API_NAME = process.env.API_NAME
-const CITY_API_REF = process.env.CITY_API_REF
-const CITY_API_KEY = process.env.CITY_API_KEY
-const CITY_API_NAME = process.env.CITY_API_NAME
+function createData(tempRes, popuRes) {
+    return {
+        cityName: popuRes.body[0].name,
+        temperature: tempRes.body.main.temp,
+        population: popuRes.body[0].population,
+    };
+}
 
-router.get('/', async (req,res) => {
+router.get('/getInfo', async (req, res) => {
     try {
-        const params = new URLSearchParams({
-            [API_NAME]: API_KEY,
-            ...url.parse(req.url,true).query
-        })
-        const apiRes = await needle('get', `${API_BASE_URL}?${params}&lang=ua&units=metric`)
-        const data = apiRes.body
-        res.status(200).json(data)
-    }catch (er){
-        res.status(500).json(er)
+        const {q} = url.parse(req.url, true).query
+        const temperatureRes = await needle('get', `${constants.WEATHER_BASE_URL}?q=${q}&appid=${constants.WEATHER_API_KEY}&lang=ua&units=metric`);
+        const populationRes = await needle('get', `${constants.CITY_API_REF}?name=${q}`, { headers: { 'X-Api-Key': constants.CITY_API_KEY } });
+        res.status(200).json(createData(temperatureRes,populationRes));
+        return res;
+        }
+    catch (err) {
+        res.status(500).json(err);
+        return res;
     }
-})
+});
 
-router.get('/getInfo', async (req,res) => {
+router.post('/getInfoPost', async (req, res) => {
     try {
-        const params = new URLSearchParams({
-            [API_NAME]: API_KEY,
-            ...url.parse(req.url,true).query
-        })
-        const tempAPI = await needle('get', `${API_BASE_URL}?${params}&lang=ua&units=metric`)
-        const populationAPI = await needle('get', `${CITY_API_REF}?name=${params.get('q')}`, {headers: {"X-Api-Key": CITY_API_KEY}})
-        const data = [{
-            "cityName" : populationAPI.body[0]['name'],
-            "temperature" : tempAPI.body["main"]["temp"],
-            'population': populationAPI.body[0]["population"]
-        }]
-        res.status(200).json(data)
+        const body = req.body;
+        const temperatureRes = await needle('get', `${constants.WEATHER_BASE_URL}?q=${body.q}&appid=${constants.WEATHER_API_KEY}&lang=ua&units=metric`);
+        const populationRes = await needle('get', `${constants.CITY_API_REF}?name=${body.q}`, { headers: { 'X-Api-Key': constants.CITY_API_KEY } });
+        res.status(200).json(createData(temperatureRes,populationRes));
+        return res;
     }
-    catch (er){
-        res.status(500).json(er)
+    catch (err) {
+        res.status(500).json(err);
+        return res;
     }
-})
+});
 
-module.exports = router
+router.delete('/getInfoDelete/:q', async (req,res) => {
+    try {
+        const q = req.params.q;
+        const temperatureRes = await needle('get', `${constants.WEATHER_BASE_URL}?q=${q}&appid=${constants.WEATHER_API_KEY}&lang=ua&units=metric`);
+        const populationRes = await needle('get', `${constants.CITY_API_REF}?name=${q}`, { headers: { 'X-Api-Key': constants.CITY_API_KEY } });
+        res.status(200).json(createData(temperatureRes,populationRes));
+        return res;
+    }
+    catch (err) {
+        res.status(500).json(err);
+        return res;
+    }
+});
+
+router.put('/getInfoPut/:q', async (req,res) => {
+    try {
+        const q = req.params.q;
+        const temperatureRes = await needle('get', `${constants.WEATHER_BASE_URL}?q=${q}&appid=${constants.WEATHER_API_KEY}&lang=ua&units=metric`);
+        const populationRes = await needle('get', `${constants.CITY_API_REF}?name=${q}`, { headers: { 'X-Api-Key': constants.CITY_API_KEY } });
+        res.status(200).json(createData(temperatureRes,populationRes));
+        return res;
+    }
+    catch (err) {
+        res.status(500).json(err);
+        return res;
+    }
+});
+
+module.exports = router;
