@@ -1,10 +1,10 @@
 const express = require('express');
-const commentsController = require('../controllers/commentsController');
+const getAllComments = require("../controllers/commentsController");
+const getByCity = require("../controllers/commentsController");
 
 const router = express.Router();
 
-router.get('/city', commentsController.getAllComments);
-
-router.get('/getByCity', commentsController.getByCity);
+router.get('/city', getAllComments);
+router.get('/getByCity', getByCity);
 
 module.exports = router;
