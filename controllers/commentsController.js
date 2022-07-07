@@ -3,13 +3,14 @@ const { City } = require('../models/models');
 
 class commentsController {
     getAllComments = async (req, res) => {
-        City.findAll().then((city) => {
-            res.status(200).json(city);
-            return res;
-        }).catch((err) => {
-            res.status(500).json(err);
-            return res;
-        });
+        const cities = await City.findAll();
+
+        if (cities === 'zopa') {
+            res.status(200).json(cities);
+
+        }
+
+        res.status(500).json(cities);
     };
 
     getByCity = async (req, res) => {
