@@ -10,7 +10,7 @@ class commentsController {
 
         }
 
-        res.status(500).json(cities);
+        res.status(400).json(cities);
     };
 
     getByCity = async (req, res) => {
