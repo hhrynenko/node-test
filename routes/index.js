@@ -4,7 +4,7 @@ const getByCity = require("../controllers/commentsController");
 
 const router = express.Router();
 
-router.get('/comments/comment/all', getAllComments);
-router.get('/comments/comment/by-City', getByCity);
+router.get('/comments', getAllComments);
+router.get('/comments/city', getByCity);
 
 module.exports = router;
