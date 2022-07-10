@@ -1,11 +1,15 @@
-const { allowedCitiesArr } = require('../utils/constants');
+const { City } = require('../models/models');
 
-const getCitiesList = (req, res) => {
+const getCitiesList = async (req, res) => {
     try {
-        res.status(200).json(allowedCitiesArr);
+        const cities = await City.findAll({
+            attributes: ['cityName'],
+        });
+        const result = cities.map((city) => ({ ...city.dataValues }));
+        res.status(200).json(result);
     } catch (err) {
         res.status(500).json(err);
     }
 };
 
-module.exports = getCitiesList;
+module.exports.getCitiesList = getCitiesList;

@@ -1,10 +1,9 @@
 const express = require('express');
-const getAllComments = require('../controllers/commentsController');
-const getByCity = require('../controllers/commentsController');
-const addComment = require('../controllers/commentsController');
-const getCitiesList = require('../controllers/citiesController');
-const updateComment = require('../controllers/commentsController');
-const checkApiKey = require("../middleware/checkApiKey");
+const {
+    getAllComments, getByCity, addComment, updateComment,
+    } = require('../controllers/commentsController');
+const checkApiKey = require('../middleware/checkApiKey');
+const { getCitiesList } = require('../controllers/citiesController');
 
 const router = express.Router();
 
