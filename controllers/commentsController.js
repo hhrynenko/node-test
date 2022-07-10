@@ -24,19 +24,21 @@ const getByCity = async (req, res) => {
             error: 'There are no city name.',
         });
     }
-    const cities = await City.findAll({
+    const comments = await City.findAll({
         attributes: ['commentText', 'id'],
         where: {
             cityName,
         },
     });
-    if (isEmpty(cities)) {
-        return res.status(500);
+    if (isEmpty(comments)) {
+        return res.status(500).json({
+            error: 'There are no comments.',
+        });
     }
     return res.status(200).json({
         main: {
             cityName,
-            comments: cities,
+            comments,
         },
     });
 };
@@ -46,11 +48,6 @@ const addComment = async (req, res) => {
         if (isEmpty(req.body)) {
             return res.status(500).json({
                 error: 'Request body is empty.',
-            });
-        }
-        if (req.get('API-Key') !== process.env.HEADER_KEY) {
-            return res.status(403).json({
-                error: 'Api key is required for this function.',
             });
         }
         const { cityName, commentText } = req.body;
@@ -79,13 +76,8 @@ const updateComment = async (req, res) => {
                 error: 'Request body is empty.',
             });
         }
-        if (req.get('API-Key') !== process.env.HEADER_KEY) {
-            return res.status(403).json({
-                error: 'Api key is required for this function.',
-            });
-        }
         const { newCommentText } = req.body;
-        const { id } = req.params.id;
+        const id = parseInt(req.params.id, 10);
         if (id > await City.count()) {
             return res.status(500).json({
                 error: 'Id is not found in DB',
@@ -93,7 +85,7 @@ const updateComment = async (req, res) => {
         }
         await City.update({ commentText: newCommentText }, {
             where: {
-                id: parseInt(id, 10),
+                id,
             },
         });
         return res.status(200).json({
