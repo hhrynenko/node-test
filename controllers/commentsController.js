@@ -28,13 +28,13 @@ const getByCity = async (req, res) => {
                 error: 'There are no city name.',
             });
         }
-        const { id } = await City.findOne({
+        const id = await City.findOne({
             attributes: ['id'],
             where: {
                 cityName,
             },
         });
-        if (id === null) {
+        if (!id) {
             return res.status(500).json({
                 error: 'Wrong city name.',
             });
@@ -42,7 +42,7 @@ const getByCity = async (req, res) => {
         const comments = await Comment.findAll({
             attributes: ['commentText'],
             where: {
-                cityId: id,
+                cityId: id.id,
             },
         });
         if (isEmpty(comments)) {
@@ -69,19 +69,19 @@ const addComment = async (req, res) => {
             });
         }
         const { cityName, commentText } = req.body;
-        const comment = await City.findOne({
+        const cityInDb = await City.findOne({
             where: {
                 cityName,
             },
         });
-        if (isEmpty(comment)) {
+        if (isEmpty(cityInDb)) {
             return res.status(500).json({
                 error: `There are no ${cityName} in list. For full list see: /api/cities/`,
             });
         }
         await Comment.create({
             commentText,
-            cityId: comment.id,
+            cityId: cityInDb.id,
         });
         return res.status(200).json({
             message: 'Successfully added new comment.',
@@ -100,12 +100,12 @@ const updateComment = async (req, res) => {
         }
         const { commentText } = req.body;
         const id = parseInt(req.params.id, 10);
-        const idCheck = await Comment.findOne({
+        const cityInDb = await Comment.findOne({
             where: {
                 id,
             },
         });
-        if (isEmpty(idCheck)) {
+        if (isEmpty(cityInDb)) {
             return res.status(500).json({
                 error: 'Id is not found in DB',
             });
