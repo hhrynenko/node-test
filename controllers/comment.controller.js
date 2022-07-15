@@ -1,5 +1,5 @@
 const url = require('url');
-const { isEmpty, get } = require('lodash');
+const { isEmpty } = require('lodash');
 const { City, Comment } = require('../models/models');
 
 const getAllComments = async (req, res) => {
@@ -29,7 +29,7 @@ const getByCity = async (req, res) => {
             });
         }
         const id = await City.findOne({
-            attributes: ['id'],
+            attributes: ['id', 'averageGrade'],
             where: {
                 cityName,
             },
@@ -53,6 +53,7 @@ const getByCity = async (req, res) => {
         return res.status(200).json({
             main: {
                 cityName,
+                averageGrade: id.averageGrade,
                 comments,
             },
         });
@@ -69,7 +70,7 @@ const addComment = async (req, res) => {
             });
         }
         const { cityName, commentText, commentGrade } = req.body;
-        if (commentGrade > 10 || commentGrade < 1 || Number.isInteger(commentGrade)) {
+        if (commentGrade > 10 || commentGrade < 1 || !Number.isInteger(commentGrade)) {
             return res.status(500).json({
                 error: `Entered grade is ${commentGrade}, but allowed is [1-10] or grade is not number.`,
             });
@@ -84,12 +85,12 @@ const addComment = async (req, res) => {
                 error: `There are no ${cityName} in list. For full list see: /api/cities/`,
             });
         }
-        const ifCommentInDb = await Comment.create({
+        const commentInDb = await Comment.create({
             commentText,
             cityId: cityInDb.id,
             cityGrade: commentGrade,
         });
-        if (isEmpty(ifCommentInDb)) {
+        if (isEmpty(commentInDb)) {
             return res.status(500).json({
                 error: 'Unsuccessful attempt to add a new comment.',
             });
@@ -100,11 +101,11 @@ const addComment = async (req, res) => {
                 cityId: cityInDb.id,
             },
         });
-        const result = allGradesByCity
-            .reduce((partialSum, grade) => partialSum + grade.dataValues.cityGrade, 0)
-            / allGradesByCity.length;
+        const gradesSum = allGradesByCity
+            .reduce((partialSum, grade) => partialSum + grade.dataValues.cityGrade, 0);
+        const result = gradesSum/allGradesByCity.length;
         await City.update({
-                averageGrade: get(result.toFixed(2), 0),
+                averageGrade: result.toFixed(2),
             }, {
                 where: {
                     id: cityInDb.id,
@@ -155,11 +156,11 @@ const updateComment = async (req, res) => {
                     cityId: cityInDb.cityId,
                 },
             });
-            const result = allGradesByCity
-                    .reduce((partialSum, grade) => partialSum + grade.dataValues.cityGrade, 0)
-                / allGradesByCity.length;
+            const gradesSum = allGradesByCity
+                .reduce((partialSum, grade) => partialSum + grade.dataValues.cityGrade, 0);
+            const result = gradesSum/allGradesByCity.length;
             await City.update({
-                averageGrade: get(result.toFixed(2), 0),
+                averageGrade: result.toFixed(2),
             }, {
                 where: {
                     id: cityInDb.cityId,

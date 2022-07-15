@@ -2,7 +2,7 @@ const express = require('express');
 const {
     getAllComments, getByCity, addComment, updateComment,
     } = require('../controllers/comment.controller');
-const checkApiKey = require('../middleware/validateRequest');
+const checkApiKey = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
