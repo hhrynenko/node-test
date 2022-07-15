@@ -1,5 +1,5 @@
 const url = require('url');
-const { isEmpty } = require('lodash');
+const { isEmpty, get } = require('lodash');
 const { City, Comment } = require('../models/models');
 
 const getAllComments = async (req, res) => {
@@ -63,12 +63,17 @@ const getByCity = async (req, res) => {
 
 const addComment = async (req, res) => {
     try {
-        if (isEmpty(req.body)) {
+        if (isEmpty(req.body.cityName)) {
             return res.status(500).json({
-                error: 'Request body is empty.',
+                error: 'Request body is not full.',
             });
         }
-        const { cityName, commentText } = req.body;
+        const { cityName, commentText, commentGrade } = req.body;
+        if (commentGrade > 10 || commentGrade < 1 || Number.isInteger(commentGrade)) {
+            return res.status(500).json({
+                error: `Entered grade is ${commentGrade}, but allowed is [1-10] or grade is not number.`,
+            });
+        }
         const cityInDb = await City.findOne({
             where: {
                 cityName,
@@ -79,10 +84,32 @@ const addComment = async (req, res) => {
                 error: `There are no ${cityName} in list. For full list see: /api/cities/`,
             });
         }
-        await Comment.create({
+        const ifCommentInDb = await Comment.create({
             commentText,
             cityId: cityInDb.id,
+            cityGrade: commentGrade,
         });
+        if (isEmpty(ifCommentInDb)) {
+            return res.status(500).json({
+                error: 'Unsuccessful attempt to add a new comment.',
+            });
+        }
+        const allGradesByCity = await Comment.findAll({
+            attributes: ['cityGrade'],
+            where: {
+                cityId: cityInDb.id,
+            },
+        });
+        const result = allGradesByCity
+            .reduce((partialSum, grade) => partialSum + grade.dataValues.cityGrade, 0)
+            / allGradesByCity.length;
+        await City.update({
+                averageGrade: get(result.toFixed(2), 0),
+            }, {
+                where: {
+                    id: cityInDb.id,
+                },
+            });
         return res.status(200).json({
             message: 'Successfully added new comment.',
         });
@@ -93,7 +120,7 @@ const addComment = async (req, res) => {
 
 const updateComment = async (req, res) => {
     try {
-        if (isEmpty(req.body)) {
+        if (isEmpty(req.body.commentText)) {
             return res.status(500).json({
                 error: 'Request body is empty.',
             });
@@ -110,14 +137,47 @@ const updateComment = async (req, res) => {
                 error: 'Id is not found in DB',
             });
         }
-        await Comment.update({ commentText }, {
-            where: {
-                id,
-            },
-        });
-        return res.status(200).json({
-            message: `Successfully updated comment #${id}`,
-        });
+        if (req.body.newGrade) {
+            const { newGrade } = req.body;
+            if (!Number.isInteger(newGrade)) {
+                return res.status(500).json({
+                    error: 'New grade is not number.',
+                });
+            }
+            await Comment.update({ commentText, cityGrade: newGrade }, {
+                where: {
+                    id,
+                },
+            });
+            const allGradesByCity = await Comment.findAll({
+                attributes: ['cityGrade'],
+                where: {
+                    cityId: cityInDb.cityId,
+                },
+            });
+            const result = allGradesByCity
+                    .reduce((partialSum, grade) => partialSum + grade.dataValues.cityGrade, 0)
+                / allGradesByCity.length;
+            await City.update({
+                averageGrade: get(result.toFixed(2), 0),
+            }, {
+                where: {
+                    id: cityInDb.cityId,
+                },
+            });
+            return res.status(200).json({
+                message: `Successfully updated comment and grade #${id}`,
+            });
+        } else {
+            await Comment.update({ commentText }, {
+                where: {
+                    id,
+                },
+            });
+            return res.status(200).json({
+                message: `Successfully updated comment #${id}`,
+            });
+        }
     } catch (err) {
         return res.status(500).json(err);
     }

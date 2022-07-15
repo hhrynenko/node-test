@@ -1,4 +1,4 @@
-const checkApiKey = (req, res, next) => {
+const validateRequest = (req, res, next) => {
     if (req.get('API-Key') !== process.env.HEADER_KEY) {
         return res.status(403).json({
             error: 'Api key is required for this function.',
@@ -7,4 +7,4 @@ const checkApiKey = (req, res, next) => {
     return next();
 };
 
-module.exports = checkApiKey;
+module.exports = validateRequest;
