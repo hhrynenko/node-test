@@ -10,7 +10,8 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 // Routes
-app.use('/api', require('./routes'));
+app.use('/api', require('./routes/comments'));
+app.use('/api', require('./routes/cities'));
 // Static
 app.use(express.static('./public'));
 
