@@ -12,6 +12,7 @@ app.use(bodyParser.json());
 // Routes
 app.use('/api', require('./routes/comments'));
 app.use('/api', require('./routes/cities'));
+app.use('/api', require('./routes/ratings'));
 // Static
 app.use(express.static('./public'));
 
