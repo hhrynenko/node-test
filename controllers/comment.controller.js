@@ -103,7 +103,7 @@ const addComment = async (req, res) => {
         });
         const gradesSum = allGradesByCity
             .reduce((partialSum, grade) => partialSum + grade.dataValues.cityGrade, 0);
-        const result = gradesSum/allGradesByCity.length;
+        const result = gradesSum / allGradesByCity.length;
         await City.update({
                 averageGrade: result.toFixed(2),
             }, {
