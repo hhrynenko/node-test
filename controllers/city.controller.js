@@ -1,15 +1,87 @@
-const { City } = require('../models/models');
+const { isEmpty, split } = require('lodash');
+const { Op } = require('sequelize');
+const { City, Comment } = require('../models/models');
+const { getPagination, getTotalPages } = require('./pagination.controller');
 
 const getCitiesList = async (req, res) => {
     try {
-        const cities = await City.findAll({
+        const currPage = req.query.page;
+        const size = req.query.l;
+        const { limit, offset } = getPagination(currPage, size);
+        const cities = await City.findAndCountAll({
             attributes: ['cityName'],
+            limit,
+            offset,
+            raw: true,
         });
-        const result = cities.map((city) => ({ ...city.dataValues }));
-        res.status(200).json(result);
+        if (isEmpty(cities.rows)) {
+            return res.status(500).json({
+                error: 'No page.',
+            });
+        }
+        const totalPages = getTotalPages(cities.count, limit);
+        return res.status(200).json({
+            currentPage: currPage,
+            limit,
+            totalPages,
+            cities,
+        });
     } catch (err) {
-        res.status(500).json(err);
+        return res.status(500).json(err);
+    }
+};
+
+const getCommentsByCities = async (req, res) => {
+    try {
+        if (isEmpty(req.params.ids)) {
+            return res.status(500).json({
+                error: 'Params is empty.',
+            });
+        }
+        const ids = split(req.params.ids, ',');
+        const intIdsArray = ids.map((id) => {
+            const strToInt = parseInt(id, 10);
+            return Number.isInteger(strToInt) === true;
+        }).filter((id) => id != null || Number.isInteger(id) === true);
+        if (isEmpty(intIdsArray)) {
+            return res.status(500).json({
+                error: 'Parameters is wrong.',
+            });
+        }
+        const citiesInDb = await City.findAll({
+            where: {
+                id: {
+                    [Op.or]: intIdsArray,
+                },
+            },
+            raw: true,
+        });
+        if (isEmpty(citiesInDb)) {
+            return res.status(500).json({
+                error: 'Unable to find cities from DB or id is not find.',
+            });
+        }
+        const commentsInDb = await Comment.findAll({
+            where: {
+                cityId: {
+                    [Op.or]: intIdsArray,
+                },
+            },
+            raw: true,
+        });
+        const result = citiesInDb.map((city) => {
+            const cityComments = commentsInDb
+                .filter((comment) => comment.cityId === city.id);
+            return {
+                city,
+                comments: cityComments,
+            };
+        });
+        return res.status(200).json(result);
+    } catch (err) {
+        return res.status(500).json(err);
     }
 };
 
 module.exports.getCitiesList = getCitiesList;
+module.exports.getCommentsByCities = getCommentsByCities;

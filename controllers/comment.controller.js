@@ -1,24 +1,7 @@
 const url = require('url');
 const { isEmpty } = require('lodash');
 const { City, Comment } = require('../models/models');
-
-const getAllComments = async (req, res) => {
-    try {
-        const comments = await Comment.findAll();
-        const cities = await City.findAll();
-        const result = cities.map((city) => {
-           const cityComments = comments
-               .filter((comment) => comment.dataValues.cityId === city.dataValues.id);
-            return {
-                ...city.dataValues,
-                comments: cityComments,
-            };
-        });
-        return res.status(200).json(result);
-    } catch (err) {
-        return res.status(500).json(err);
-    }
-};
+const { getPagination, getTotalPages } = require('./pagination.controller');
 
 const getByCity = async (req, res) => {
     try {
@@ -28,6 +11,9 @@ const getByCity = async (req, res) => {
                 error: 'There are no city name.',
             });
         }
+        const currPage = req.query.page;
+        const size = req.query.l;
+        const { limit, offset } = getPagination(currPage, size);
         const id = await City.findOne({
             attributes: ['id', 'averageGrade'],
             where: {
@@ -39,21 +25,32 @@ const getByCity = async (req, res) => {
                 error: 'Wrong city name.',
             });
         }
-        const comments = await Comment.findAll({
+        const comments = await Comment.findAndCountAll({
             attributes: ['commentText'],
+            limit,
+            offset,
             where: {
                 cityId: id.id,
             },
+            raw: true,
         });
         if (isEmpty(comments)) {
             return res.status(500).json({
                 error: 'There are no comments.',
             });
         }
+        if (isEmpty(comments.rows)) {
+            return res.status(500).json({
+                error: 'No page.',
+            });
+        }
+        const totalPages = getTotalPages(comments.count, limit);
         return res.status(200).json({
             main: {
                 cityName,
                 averageGrade: id.averageGrade,
+                currPage,
+                totalPages,
                 comments,
             },
         });
@@ -185,6 +182,5 @@ const updateComment = async (req, res) => {
 };
 
 module.exports.getByCity = getByCity;
-module.exports.getAllComments = getAllComments;
 module.exports.addComment = addComment;
 module.exports.updateComment = updateComment;
