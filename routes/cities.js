@@ -1,8 +1,10 @@
 const express = require('express');
-const { getCitiesList } = require('../controllers/city.controller');
+const { getCitiesList, getCommentsByCities } = require('../controllers/city.controller');
+const { paginationInputCheck } = require('../middleware/paginationInputCheck');
 
 const router = express.Router();
 
-router.get('/cities', getCitiesList);
+router.get('/cities', paginationInputCheck, getCitiesList);
+router.get('/cities/:ids/comments', getCommentsByCities);
 
 module.exports = router;
