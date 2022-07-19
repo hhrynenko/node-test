@@ -34,11 +34,6 @@ const getByCity = async (req, res) => {
             },
             raw: true,
         });
-        if (isEmpty(comments)) {
-            return res.status(500).json({
-                error: 'There are no comments.',
-            });
-        }
         if (isEmpty(comments.rows)) {
             return res.status(500).json({
                 error: 'No page.',
