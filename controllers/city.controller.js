@@ -6,7 +6,7 @@ const { getPagination, getTotalPages } = require('./pagination.controller');
 const getCitiesList = async (req, res) => {
     try {
         const currPage = req.query.page;
-        const size = req.query.l;
+        const size = req.query.limit;
         const { limit, offset } = getPagination(currPage, size);
         const cities = await City.findAndCountAll({
             attributes: ['cityName'],
@@ -39,11 +39,7 @@ const getCommentsByCities = async (req, res) => {
             });
         }
         const ids = split(req.params.ids, ',');
-        const intIdsArray = ids.map((id) => {
-            const strToInt = parseInt(id, 10);
-            return Number.isInteger(strToInt) === true;
-        }).filter((id) => id != null || Number.isInteger(id) === true);
-        if (isEmpty(intIdsArray)) {
+        if (isEmpty(ids)) {
             return res.status(500).json({
                 error: 'Parameters is wrong.',
             });
@@ -51,7 +47,7 @@ const getCommentsByCities = async (req, res) => {
         const citiesInDb = await City.findAll({
             where: {
                 id: {
-                    [Op.or]: intIdsArray,
+                    [Op.or]: ids,
                 },
             },
             raw: true,
@@ -64,7 +60,7 @@ const getCommentsByCities = async (req, res) => {
         const commentsInDb = await Comment.findAll({
             where: {
                 cityId: {
-                    [Op.or]: intIdsArray,
+                    [Op.or]: ids,
                 },
             },
             raw: true,
@@ -79,6 +75,11 @@ const getCommentsByCities = async (req, res) => {
         });
         return res.status(200).json(result);
     } catch (err) {
+        if (err.original.code === '22P02') {
+            return res.status(500).json({
+                error: 'Wrong ids input.',
+            });
+        }
         return res.status(500).json(err);
     }
 };

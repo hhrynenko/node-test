@@ -1,7 +1,5 @@
 const express = require('express');
-const {
-        getByCity, addComment, updateComment,
-    } = require('../controllers/comment.controller');
+const { getByCity, addComment, updateComment } = require('../controllers/comment.controller');
 const checkApiKey = require('../middleware/authMiddleware');
 const { paginationInputCheck } = require('../middleware/paginationInputCheck');
 

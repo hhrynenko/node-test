@@ -12,7 +12,7 @@ const getByCity = async (req, res) => {
             });
         }
         const currPage = req.query.page;
-        const size = req.query.l;
+        const size = req.query.limit;
         const { limit, offset } = getPagination(currPage, size);
         const id = await City.findOne({
             attributes: ['id', 'averageGrade'],
@@ -166,16 +166,15 @@ const updateComment = async (req, res) => {
             return res.status(200).json({
                 message: `Successfully updated comment and grade #${id}`,
             });
-        } else {
-            await Comment.update({ commentText }, {
-                where: {
-                    id,
-                },
-            });
-            return res.status(200).json({
-                message: `Successfully updated comment #${id}`,
-            });
         }
+        await Comment.update({ commentText }, {
+            where: {
+                id,
+            },
+        });
+        return res.status(200).json({
+            message: `Successfully updated comment #${id}`,
+        });
     } catch (err) {
         return res.status(500).json(err);
     }
