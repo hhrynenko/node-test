@@ -9,7 +9,9 @@ const getCitiesList = async (req, res) => {
         const size = req.query.limit;
         const { limit, offset } = getPagination(currPage, size);
         const cities = await City.findAndCountAll({
-            attributes: ['cityName'],
+            order: [
+                ['id', 'ASC'],
+            ],
             limit,
             offset,
             raw: true,

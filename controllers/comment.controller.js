@@ -6,13 +6,13 @@ const { getPagination, getTotalPages } = require('./pagination.controller');
 const getByCity = async (req, res) => {
     try {
         const { cityName } = url.parse(req.url, true).query;
-        if (isEmpty(cityName)) {
-            return res.status(501).json({
-                error: 'There are no city name.',
-            });
-        }
         const currPage = req.query.page;
         const size = req.query.limit;
+        if (isEmpty(cityName)) {
+            return res.status(500).json({
+                error: 'No city name.',
+            });
+        }
         const { limit, offset } = getPagination(currPage, size);
         const id = await City.findOne({
             attributes: ['id', 'averageGrade'],
@@ -26,9 +26,12 @@ const getByCity = async (req, res) => {
             });
         }
         const comments = await Comment.findAndCountAll({
-            attributes: ['commentText'],
+            attributes: ['commentText', 'id'],
             limit,
             offset,
+            order: [
+                ['id', 'ASC'],
+            ],
             where: {
                 cityId: id.id,
             },
@@ -40,7 +43,7 @@ const getByCity = async (req, res) => {
             });
         }
         const totalPages = getTotalPages(comments.count, limit);
-        return res.status(200).json({
+        return res.status(203).json({
             main: {
                 cityName,
                 averageGrade: id.averageGrade,
@@ -56,12 +59,12 @@ const getByCity = async (req, res) => {
 
 const addComment = async (req, res) => {
     try {
-        if (isEmpty(req.body.cityName)) {
+        const { cityName, commentText, commentGrade } = req.body;
+        if (!cityName || !commentText || !commentGrade) {
             return res.status(500).json({
                 error: 'Request body is not full.',
             });
         }
-        const { cityName, commentText, commentGrade } = req.body;
         if (commentGrade > 10 || commentGrade < 1 || !Number.isInteger(commentGrade)) {
             return res.status(500).json({
                 error: `Entered grade is ${commentGrade}, but allowed is [1-10] or grade is not number.`,
@@ -105,6 +108,7 @@ const addComment = async (req, res) => {
             });
         return res.status(200).json({
             message: 'Successfully added new comment.',
+            newAverageGrade: result.toFixed(2),
         });
     } catch (err) {
         return res.status(500).json(err);
@@ -132,9 +136,9 @@ const updateComment = async (req, res) => {
         }
         if (req.body.newGrade) {
             const { newGrade } = req.body;
-            if (!Number.isInteger(newGrade)) {
+            if (!Number.isInteger(newGrade) || newGrade < 1 || newGrade > 10) {
                 return res.status(500).json({
-                    error: 'New grade is not number.',
+                    error: 'newGrade have problems. Number from 1 to 10 is allowed.',
                 });
             }
             await Comment.update({ commentText, cityGrade: newGrade }, {
@@ -160,6 +164,7 @@ const updateComment = async (req, res) => {
             });
             return res.status(200).json({
                 message: `Successfully updated comment and grade #${id}`,
+                newAverageGrade: result.toFixed(2),
             });
         }
         await Comment.update({ commentText }, {
@@ -169,6 +174,7 @@ const updateComment = async (req, res) => {
         });
         return res.status(200).json({
             message: `Successfully updated comment #${id}`,
+            newCommentText: commentText,
         });
     } catch (err) {
         return res.status(500).json(err);
