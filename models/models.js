@@ -13,7 +13,7 @@ const Comment = sequelize.define('comment', {
     cityGrade: { type: DataTypes.INTEGER, allowNull: false },
 }, { timestamps: false });
 
-City.hasMany(Comment);
+City.hasMany(Comment, { onDelete: 'CASCADE' });
 Comment.belongsTo(City);
 
 module.exports = {

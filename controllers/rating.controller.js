@@ -11,7 +11,7 @@ const getTopCities = async (req, res) => {
                 error: 'Address query is empty.',
             });
         }
-        if (lim <= 0 || !Number.isInteger(lim)) {
+        if (lim <= 0 || !Number.isInteger(parseInt(lim, 10))) {
             return res.status(500).json({
                 error: 'Limit is not correct ([1-...]])',
             });
@@ -20,17 +20,12 @@ const getTopCities = async (req, res) => {
             order: sequelize.literal('"averageGrade" DESC'),
             limit: lim,
         });
-        if (!topCities) {
+        if (isEmpty(topCities)) {
             return res.status(500).json({
-                error: 'Something went wrong with the query.',
+                error: 'Something went wrong with the query or there are no cities.',
             });
         }
         const comments = await Comment.findAll();
-        if (isEmpty(comments)) {
-            return res.status(500).json({
-                error: 'There are no comments.',
-            });
-        }
         const result = topCities.map((city) => {
             const cityComments = comments
                 .filter((comment) => comment.dataValues.cityId === city.dataValues.id);
