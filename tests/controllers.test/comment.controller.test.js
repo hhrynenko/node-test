@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { addSomeCitiesToDb, clearCitiesFromDb, addComments } = require('../dbFuncs/dbFillsAndCleans');
+const { addSomeCitiesToDb, clearCitiesFromDb, addComments } = require('../utils/dbController');
 const app = require('../../app');
 
 let idsOfTempCities;
@@ -18,7 +18,6 @@ const gradesOfComments = [3, 6, 8, 10, 2];
 beforeEach(async () => {
     idsOfTempCities = await addSomeCitiesToDb(citiesToAdd);
     queryDataOfComments = await addComments(idsOfTempCities, gradesOfComments);
-    return null;
 });
 afterEach(async () => clearCitiesFromDb(idsOfTempCities));
 
@@ -39,7 +38,6 @@ describe('getByCity', () => {
                 .reduce((max, id) => (id > max ? id : max), 0);
         expect(bodyMain.comments.rows[bodyMain.comments.rows.length - 1].id).toBe(queryCommsId);
         expect(response.statusCode).toBe(203);
-        return null;
     });
 
     test('Must return error about query cityName emptiness', async () => {

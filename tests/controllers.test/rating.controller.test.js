@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../../app');
-const { addSomeCitiesToDb, clearCitiesFromDb } = require('../dbFuncs/dbFillsAndCleans');
+const { addSomeCitiesToDb, clearCitiesFromDb } = require('../utils/dbController');
 
 let idsOfTempCities;
 const citiesToAdd = [
@@ -15,7 +15,6 @@ const citiesToAdd = [
 
 beforeEach(async () => {
     idsOfTempCities = await addSomeCitiesToDb(citiesToAdd);
-    return idsOfTempCities;
 });
 afterEach(async () => clearCitiesFromDb(idsOfTempCities));
 
