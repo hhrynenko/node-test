@@ -19,12 +19,16 @@ module.exports = {
           default: 0,
         },
       });
+    } else {
+      console.error('Unable to create city table because its already exists.');
     }
   },
   async down(queryInterface, Sequelize) {
     const isCityExists = await queryInterface.tableExists('city');
     if (isCityExists) {
       await queryInterface.dropTable('city');
+    } else {
+      console.error('Table comment doesn\'t exist.');
     }
   },
 };

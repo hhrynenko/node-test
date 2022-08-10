@@ -18,6 +18,8 @@ module.exports = {
           type: Sequelize.INTEGER,
         },
       });
+    } else {
+      console.error('Unable to create comment table because its already exists.');
     }
   },
 
@@ -25,6 +27,8 @@ module.exports = {
     const isCommentExists = await queryInterface.tableExists('comment');
     if (isCommentExists) {
       await queryInterface.dropTable('comment');
+    } else {
+      console.error('Table comment doesn\'t exist.');
     }
   },
 };

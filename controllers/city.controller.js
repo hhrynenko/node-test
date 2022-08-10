@@ -1,10 +1,9 @@
 const { isEmpty, split } = require('lodash');
 const { Op } = require('sequelize');
 const db = require('../db/models');
-
+const { getPagination, getTotalPages } = require('./pagination.controller');
 const City = db.city;
 const Comment = db.comment;
-const { getPagination, getTotalPages } = require('./pagination.controller');
 
 const getCitiesList = async (req, res) => {
     try {
