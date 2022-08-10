@@ -1,7 +1,9 @@
 const { Op } = require('sequelize');
-const { City, Comment } = require('../../models/models');
+const db = require('../../db/models/index');
+const { City, Comment } = require('../../utils/constants');
 
 const addSomeCitiesToDb = async (citiesToAdd) => {
+    await db.sequelize.authenticate();
     const queryRes = await City.bulkCreate(citiesToAdd);
     return queryRes.map((city) => city.dataValues.id);
 };

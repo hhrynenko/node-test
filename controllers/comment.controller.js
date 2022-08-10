@@ -1,7 +1,7 @@
 const url = require('url');
 const { isEmpty } = require('lodash');
-const { City, Comment } = require('../models/models');
 const { getPagination, getTotalPages } = require('./pagination.controller');
+const { City, Comment } = require('../utils/constants');
 
 const getByCity = async (req, res) => {
     try {
