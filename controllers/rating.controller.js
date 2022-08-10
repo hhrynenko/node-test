@@ -1,7 +1,10 @@
 const url = require('url');
 const sequelize = require('sequelize');
 const { isEmpty } = require('lodash');
-const { City, Comment } = require('../utils/constants');
+const db = require('../db/models');
+
+const City = db.city;
+const Comment = db.comment;
 
 const getTopCities = async (req, res) => {
     try {

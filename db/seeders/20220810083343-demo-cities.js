@@ -1,3 +1,5 @@
+const { Op } = require('sequelize');
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert('city', [
@@ -9,6 +11,10 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('city', null, {});
+    await queryInterface.bulkDelete('city', {
+      id: {
+        [Op.or]: [1, 2, 3, 4],
+      },
+}, {});
   },
 };
