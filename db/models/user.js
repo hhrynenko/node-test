@@ -3,34 +3,37 @@ const {
 } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class Comment extends Model {
+  class user extends Model {
     static associate(models) {
-      this.belongsTo(models.city, { onDelete: 'CASCADE' });
+      user.belongsToMany(models.role, { through: models.user_roles, foreignKey: 'userId' });
     }
   }
-  Comment.init({
+  user.init({
     id: {
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
-    commentText: {
+    username: {
       allowNull: false,
+      unique: true,
       type: DataTypes.STRING,
     },
-    cityGrade: {
+    email: {
       allowNull: false,
-      type: DataTypes.INTEGER,
+      unique: true,
+      type: DataTypes.STRING,
     },
-    cityId: {
-      type: DataTypes.INTEGER, allowNull: false, onDelete: 'CASCADE', references: { model: 'city', key: 'id' },
+    password: {
+      allowNull: false,
+      type: DataTypes.STRING,
     },
   }, {
     sequelize,
     timestamps: false,
-    tableName: 'comment',
-    modelName: 'comment',
+    tableName: 'user',
+    modelName: 'user',
   });
-  return Comment;
+  return user;
 };

@@ -17,8 +17,8 @@ module.exports = {
             }
         } else {
             console
-                .error('Migration can\'t create foreign' +
-                    ' key because comment or city tables doesn\'t exist');
+                .error('Migration can\'t create foreign'
+                    + ' key because comment or city tables doesn\'t exist');
         }
     },
 
