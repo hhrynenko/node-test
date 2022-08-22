@@ -3,32 +3,27 @@ const {
 } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class City extends Model {
+  class role extends Model {
     static associate(models) {
-      this.hasMany(models.comment, { onDelete: 'CASCADE', foreignKey: 'cityId' });
+      role.belongsToMany(models.user, { through: models.user_roles, foreignKey: 'roleId' });
     }
   }
-  City.init({
+  role.init({
     id: {
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
-    cityName: {
+    roleName: {
       allowNull: false,
       type: DataTypes.STRING,
     },
-    averageGrade: {
-      allowNull: false,
-      type: DataTypes.DOUBLE,
-      default: 0,
-    },
   }, {
-    timestamps: false,
-    tableName: 'city',
     sequelize,
-    modelName: 'city',
+    timestamps: false,
+    tableName: 'role',
+    modelName: 'role',
   });
-  return City;
+  return role;
 };
