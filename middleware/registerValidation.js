@@ -1,4 +1,5 @@
 const { isEmpty } = require('lodash');
+const { regEmail, regPassword, regUsername } = require("../utils/constants");
 
 const regValidation = (req, res, next) => {
     const { email, username, password } = req.body;
@@ -7,9 +8,7 @@ const regValidation = (req, res, next) => {
             error: 'Body is not full.',
         });
     }
-    const regEmail = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/g;
-    const regPassword = /^([.!]?\w*)*\w*([.!]?\w)+$/g;
-    const regUsername = /^([^_!]?[a-zA-Z0-9])+(_?[a-zA-Z0-9])+$/g;
+
     if (!regEmail.test(email)) {
         return res.status(500).json({
             error: 'Email is not valid.',

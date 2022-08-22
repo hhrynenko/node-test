@@ -70,25 +70,25 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const isUserExists = await User.findOne({
+        const userInTableUser = await User.findOne({
             where: {
                 email,
             },
             include: Role,
         });
-        if (!isUserExists) {
+        if (!userInTableUser) {
             return res.status(500).json({
                 error: 'User with this email doesn\'t exist',
             });
         }
-        const validPassword = bcrypt.compareSync(password, isUserExists.password);
+        const validPassword = bcrypt.compareSync(password, userInTableUser.password);
         if (!validPassword) {
             return res.status(500).json({
                 error: 'Password is incorrect.',
             });
         }
-        const userRoles = isUserExists.dataValues.roles.map((role) => role.dataValues.roleName);
-        const userId = isUserExists.dataValues.id;
+        const userRoles = userInTableUser.dataValues.roles.map((role) => role.dataValues.roleName);
+        const userId = userInTableUser.dataValues.id;
         const token = generateToken(userId, userRoles);
         return res.status(200).json({
             message: 'Successful login.',
