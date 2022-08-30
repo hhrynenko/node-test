@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
   class user extends Model {
     static associate(models) {
       user.belongsToMany(models.role, { through: models.user_roles, foreignKey: 'userId' });
+      this.hasMany(models.user_confirm_codes, { onDelete: 'CASCADE', foreignKey: 'userId' });
     }
   }
   user.init({
@@ -28,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
     password: {
       allowNull: false,
       type: DataTypes.STRING,
+    },
+    verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   }, {
     sequelize,

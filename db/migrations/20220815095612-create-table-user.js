@@ -23,6 +23,10 @@ module.exports = {
           allowNull: false,
           type: Sequelize.STRING,
         },
+        verified: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+        },
       });
     } else {
       console.error('Unable to create user table because its already exists.');
