@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const db = require('../db/models');
+require('dotenv').config();
 const { tokenSecretWord, regUidV4 } = require('../utils/constants');
 const mailer = require('../services/mailerService');
 
@@ -49,7 +50,7 @@ const registerUser = async (req, res) => {
         const uuidForNewUser = await UserConfirmCodes.create({
             userId: newUserId,
         });
-        const link = `http://localhost:5000/api/confirm/${uuidForNewUser.dataValues.verifyCode}`;
+        const link = `${process.env.API_DOMAIN}/api/confirm/${uuidForNewUser.dataValues.verifyCode}`;
         const message = {
             to: email,
             subject: 'Successful registration!',
