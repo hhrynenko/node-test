@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const db = require('../db/models');
 require('dotenv').config();
-const { tokenSecretWord, regUidV4 } = require('../utils/constants');
+const { tokenSecretWord, regUidV4, confirmationLink } = require('../utils/constants');
 const mailer = require('../services/mailerService');
 
 const Role = db.role;
@@ -50,11 +50,11 @@ const registerUser = async (req, res) => {
         const uuidForNewUser = await UserConfirmCodes.create({
             userId: newUserId,
         });
-        const link = `${process.env.API_DOMAIN}/api/confirm/${uuidForNewUser.dataValues.verifyCode}`;
+        const currentLink = confirmationLink + uuidForNewUser.dataValues.verifyCode;
         const message = {
             to: email,
             subject: 'Successful registration!',
-            html: `<a href=${link}>Confirm your account</a>`,
+            html: `<a href=${currentLink}> Confirm your account </a>`,
         };
         mailer(message);
         return res.status(200).json({
